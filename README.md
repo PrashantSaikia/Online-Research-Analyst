@@ -12,6 +12,12 @@ With Docker:
 ```
 docker-compose up --build
 ```
+
+Alternately:
+```
+docker build -t car-research .
+docker run -p 8000:8000 car-research
+```
 Then go to http://localhost:8000 
 
 ## Web UI
