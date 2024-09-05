@@ -2,11 +2,17 @@
 
 ## How to Use
 
+Locally:
+
 ```
 pip install -r requirements.txt
 python -m uvicorn main:app --reload
 ```
-Go to http://localhost:8000 
+With Docker:
+```
+docker-compose up --build
+```
+Then go to http://localhost:8000 
 
 ## Web UI
 
