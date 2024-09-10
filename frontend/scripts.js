@@ -1,3 +1,4 @@
+
 const GPTResearcher = (() => {
   const init = () => {
     // Not sure, but I think it would be better to add event handlers here instead of in the HTML
@@ -7,6 +8,20 @@ const GPTResearcher = (() => {
       .addEventListener('click', copyToClipboard)
 
     updateState('initial')
+
+    // Initialize slider value on page load
+    var budgetSlider = document.getElementById("budget");
+    updateBudgetValue(budgetSlider.value);  // Set initial value based on slider's default position
+
+    // Attach event listener to update the budget value dynamically as the slider moves
+    budgetSlider.addEventListener("input", function () {
+      updateBudgetValue(budgetSlider.value);
+    });
+  }
+
+  // Function to dynamically update budget value as the slider moves
+  function updateBudgetValue(value) {
+    document.getElementById("budget_value").innerText = `£${value}`;
   }
 
   const changeSource = () => {
@@ -51,29 +66,139 @@ const GPTResearcher = (() => {
       }
     }
 
-    socket.onopen = (event) => {
-      const task = document.querySelector('input[name="task"]').value
-      const report_type = "detailed_report"
-      const report_source = "web" 
-      const tone = "Analytical";
-      const agent = document.querySelector('input[name="agent"]:checked').value
-      let source_urls = tags
+  // Create the prompt based on user inputs
+  function create_prompt(used_new_both, budget, country = "UK", brand_name = null, model_name = null, make_year = null, postcode = null,
+    fuel_type = null, engine_specs = null, wheel_drive = null, gearbox = null, car_type = null, mileage = null) {
+    let query = `I'm looking to buy a ${used_new_both} car in ${country} within a maximum budget of £${budget}.\n`;
 
-      if (report_source !== 'sources' && source_urls.length > 0) {
-        source_urls = source_urls.slice(0, source_urls.length - 1)
-      }
+    // Check if any optional parameters are provided
+    if (brand_name || model_name || make_year || postcode || fuel_type || engine_specs || wheel_drive || gearbox || car_type || mileage) {
+    query += "Here are the specifications I am looking at:\n";
 
-      const requestData = {
-        task: task,
-        report_type: report_type,
-        report_source: report_source,
-        source_urls: source_urls,
-        tone: tone,
-        agent: agent,
-      }
+    if (brand_name) query += `- ${brand_name} cars.\n`;
+    if (model_name) query += `- ${model_name} model.\n`;
+    if (make_year) query += `- ${make_year} make year.\n`;
+    if (fuel_type) query += `- ${fuel_type} variant.\n`;
 
-      socket.send(`start ${JSON.stringify(requestData)}`)
+    query += "\nI'm interested in knowing:\n";
+    query += "1. What are some common problems of this car?\n";
+
+    if (engine_specs) {
+    query += `2. What are some common problems of the ${engine_specs} engine in this car?\n`;
+    } else {
+    query += "2. What are some common problems of the different engine configurations found in this car?\n";
     }
+
+    query += "3. Is it LEZ compliant? Is it CAZ (clean air zone) compliant? Is it ULEZ compliant?\n";
+    query += "4. The checklist of things I need to check specific to this car when I go to check it out in person.\n";
+    query += "5. How much does this car depreciate over time? Can I see a graph for detailed analysis?\n";
+    query += "6. How much are the running and ownership costs?\n";
+
+    if (gearbox) {
+    query += `7. Are there any common issues with the ${gearbox} gearbox found in this car?\n`;
+    } else {
+    query += "7. Are there any common issues with the different gearbox configurations found in this car?\n";
+    }
+
+    if (wheel_drive) {
+    query += `8. Are there any common issues with the ${wheel_drive} wheel drive found in this car?\n`;
+    } else {
+    query += "8. Are there any common issues with the different wheel drive configurations?\n";
+    }
+
+    if (car_type) {
+    query += `9. Are there any common issues with the ${car_type} body type?\n`;
+    } else {
+    query += "9. Are there any common issues with the different body types of this car?\n";
+    }
+
+    if (mileage) {
+    query += `10. Are there any common issues if this car has done ${mileage} miles?\n`;
+    }
+
+    query += "11. Does the car come with Android Auto and Apple CarPlay? If not, what are the aftermarket solutions?\n";
+
+    if (postcode) {
+    query += `12. Are there any ${brand_name} specialist garages near ${postcode}? How much do they charge for service?\n`;
+    }
+
+    } else {
+    query += "Give me a list of top 10 cars that I can buy based on a comparative analysis of:\n";
+    query += "- Common problems\n";
+    query += "- Technology features\n";
+    query += "- LEZ, CAZ, and ULEZ compliance\n";
+    query += "- Depreciation over time\n";
+    query += "- Running and ownership costs\n";
+    }
+
+    return query;
+  }
+
+
+  socket.onopen = (event) => {
+    const used_new_both = document.querySelector('select[name="used_new_both"]').value;
+    const budget = document.querySelector('input[name="budget"]').value;
+    const country = document.querySelector('input[name="country"]').value || "UK";  // Default to UK if not provided
+    const brand_name = document.querySelector('input[name="brand_name"]').value || null;
+    const model_name = document.querySelector('input[name="model_name"]').value || null;
+    const make_year = document.querySelector('input[name="make_year"]').value || null;
+    const fuel_type = document.querySelector('input[name="fuel_type"]').value || null;
+    const engine_specs = document.querySelector('input[name="engine_specs"]').value || null;
+    const gearbox = document.querySelector('input[name="gearbox"]').value || null;
+    const wheel_drive = document.querySelector('input[name="wheel_drive"]').value || null;
+    const car_type = document.querySelector('input[name="car_type"]').value || null;
+    const mileage = document.querySelector('input[name="mileage"]').value || null;
+    const postcode = document.querySelector('input[name="postcode"]').value || null;
+  
+    // Create the task using the JavaScript version of create_prompt
+    const task = create_prompt(used_new_both, budget, country, brand_name, model_name, make_year, postcode, fuel_type, engine_specs, wheel_drive, gearbox, car_type, mileage);
+  
+    const report_type = "detailed_report";
+    const report_source = "web";
+    const tone = "Analytical";
+    const agent = document.querySelector('input[name="agent"]:checked').value;
+    let source_urls = tags;
+  
+    if (report_source !== 'sources' && source_urls.length > 0) {
+      source_urls = source_urls.slice(0, source_urls.length - 1);
+    }
+  
+    const requestData = {
+      task: task,  // The task is now generated in JavaScript
+      report_type: report_type,
+      report_source: report_source,
+      source_urls: source_urls,
+      tone: tone,
+      agent: agent,
+    };
+  
+    socket.send(`start ${JSON.stringify(requestData)}`);
+  };
+  
+
+    // socket.onopen = (event) => {
+    //   const task = document.querySelector('input[name="task"]').value
+    //   const report_type = "detailed_report"
+    //   const report_source = "web" 
+    //   const tone = "Analytical";
+    //   const agent = document.querySelector('input[name="agent"]:checked').value
+    //   let source_urls = tags
+
+    //   if (report_source !== 'sources' && source_urls.length > 0) {
+    //     source_urls = source_urls.slice(0, source_urls.length - 1)
+    //   }
+
+    //   const requestData = {
+    //     task: task,
+    //     report_type: report_type,
+    //     report_source: report_source,
+    //     source_urls: source_urls,
+    //     tone: tone,
+    //     agent: agent,
+    //   }
+
+    //   socket.send(`start ${JSON.stringify(requestData)}`)
+    // }
   }
 
   const addAgentResponse = (data) => {
@@ -197,6 +322,6 @@ const GPTResearcher = (() => {
     startResearch,
     copyToClipboard,
     changeSource,
-      addTag,
+    addTag,
   }
 })()

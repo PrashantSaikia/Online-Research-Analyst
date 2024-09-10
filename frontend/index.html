@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -41,25 +42,115 @@
 <body>
 
     <main class="container" id="form">
-        <div class="agent-item"><img src="/static/gptr-logo.png" class="avatar" alt="Auto Agent"></div>
+        <div class="agent-item"><img src="/static/logo.png" class="avatar" alt="Auto Agent"></div>
         <form method="POST" class="mt-3" onsubmit="GPTResearcher.startResearch(); return false;">
             <div class="form-group">
-                <label for="task" class="agent-question">What would you like me to research?</label>
-                <input id="task" name="task" class="form-control" required></input>
                 <input type="radio" name="agent" id="autoAgent" value="Auto Agent" checked hidden>
             </div>
 
-            <!-- Hidden inputs to mimic dropdowns -->
-            <input type="hidden" name="report_type" value="detailed_report">
-            <input type="hidden" name="tone" value="Analytical">
-            <input type="hidden" name="report_source" value="web">
-
+            <!-- Used/New/Both Dropdown -->
             <div class="form-group">
-                <div class="row"></div>
-                <button type="button" id="btnShowAuto" class="btn btn-secondary mt-3 btn-show">Auto Agent</button>
+                <label for="used_new_both" class="agent-question">Are you looking for a used, new, or both types of cars?</label>
+                <select id="used_new_both" name="used_new_both" class="form-control" required>
+                    <option value="used">Used</option>
+                    <option value="new">New</option>
+                    <option value="both used or new">Both Used and New</option>
+                </select>
             </div>
 
-            <input type="submit" value="Research" class="btn btn-primary button-padding">
+            <!-- Budget Slider -->
+            <div class="form-group">
+                <label for="budget" class="agent-question">What is your maximum budget?</label>
+                <input type="range" id="budget" name="budget" class="form-control" min="0" max="100000" step="500" value="10000">
+                <span id="budget_display">£10000</span>
+            </div>
+
+            <!-- Country (default to UK) -->
+            <div class="form-group">
+                <label for="country" class="agent-question">Country</label>
+                <input type="text" id="country" name="country" class="form-control" value="UK" placeholder="e.g., UK, USA">
+            </div>
+
+            <!-- Toggle Button for Optional Parameters -->
+            <div class="form-group">
+                <button type="button" class="btn btn-link" id="toggleOptionalParams">
+                    Optional Parameters <span id="toggleIcon">▼</span>
+                </button>
+            </div>
+
+            <!-- Optional Parameters (hidden by default) -->
+            <div id="optionalParams" style="display: none;">
+                <div class="form-group">
+                    <label for="brand_name" class="agent-question">Brand Name</label>
+                    <input type="text" id="brand_name" name="brand_name" class="form-control" placeholder="e.g., Audi, BMW">
+                </div>
+
+                <div class="form-group">
+                    <label for="model_name" class="agent-question">Model Name</label>
+                    <input type="text" id="model_name" name="model_name" class="form-control" placeholder="e.g., A4, X5">
+                </div>
+
+                <div class="form-group">
+                    <label for="make_year" class="agent-question">Make Year</label>
+                    <input type="number" id="make_year" name="make_year" class="form-control" placeholder="e.g., 2015">
+                </div>
+
+                <div class="form-group">
+                    <label for="engine_specs" class="agent-question">Engine Specs</label>
+                    <input type="text" id="engine_specs" name="engine_specs" class="form-control" placeholder="e.g., 3.0L TFSI">
+                </div>
+
+                <div class="form-group">
+                    <label for="fuel_type" class="agent-question">Fuel Type</label>
+                    <input type="text" id="fuel_type" name="fuel_type" class="form-control" placeholder="e.g., Petrol, Diesel, Electric">
+                </div>
+
+                <div class="form-group">
+                    <label for="gearbox" class="agent-question">Gearbox</label>
+                    <input type="text" id="gearbox" name="gearbox" class="form-control" placeholder="e.g., Automatic, CVT">
+                </div>
+
+                <div class="form-group">
+                    <label for="wheel_drive" class="agent-question">Wheel Drive</label>
+                    <input type="text" id="wheel_drive" name="wheel_drive" class="form-control" placeholder="e.g., AWD, RWD">
+                </div>
+
+                <div class="form-group">
+                    <label for="car_type" class="agent-question">Car Type</label>
+                    <input type="text" id="car_type" name="car_type" class="form-control" placeholder="e.g., SUV, Sedan">
+                </div>
+
+                <div class="form-group">
+                    <label for="mileage" class="agent-question">Mileage</label>
+                    <input type="text" id="mileage" name="mileage" class="form-control" placeholder="e.g., 30000 miles">
+                </div>
+
+                <div class="form-group">
+                    <label for="postcode" class="agent-question">Postcode (to search for specialist garage near you)</label>
+                    <input type="text" id="postcode" name="postcode" class="form-control" placeholder="e.g., EH4 6RJ">
+                </div>
+            </div>
+
+            <script>
+                document.getElementById("toggleOptionalParams").addEventListener("click", function() {
+                    var optionalParams = document.getElementById("optionalParams");
+                    var toggleIcon = document.getElementById("toggleIcon");
+                    
+                    if (optionalParams.style.display === "none") {
+                        optionalParams.style.display = "block";
+                        toggleIcon.innerHTML = "▲";  // Change icon to upward arrow
+                        this.innerHTML = "Hide Optional Parameters <span id='toggleIcon'>▲</span>";
+                    } else {
+                        optionalParams.style.display = "none";
+                        toggleIcon.innerHTML = "▼";  // Change icon to downward arrow
+                        this.innerHTML = "Show Optional Parameters <span id='toggleIcon'>▼</span>";
+                    }
+                });
+            </script>
+
+            <div class="form-group">
+                <input type="submit" value="Research" class="btn btn-primary button-padding">
+            </div>
         </form>
 
         <div class="margin-div" style="display: none;">
@@ -86,29 +177,57 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
     <script src="/site/scripts.js"></script>
+
+    <!-- JavaScript for updating the budget value dynamically -->
     <script>
-        const btnShowAuto = document.getElementById('btnShowAuto');
-        const autoAgentDiv = document.getElementById('autoAgentDiv');
-        const agentChoices = document.getElementsByClassName('agent-choices');
+        const budgetSlider = document.getElementById('budget');
+        const budgetValue = document.getElementById('budget_value');
 
-        btnShowAuto.addEventListener('click', function () {
-            btnShowAuto.style.display = 'none';
-            btnChoose.style.display = 'inline-block';
-            autoAgentDiv.style.display = 'flex';
-            agentChoices[0].style.display = 'none';
-        });
-
-        const tagsInput = document.getElementById('tags-input');
-        const input = document.getElementById('custom_source');
-
-        input.addEventListener('keypress', function (e) {
-            if ((e.key === 'Enter' || e.key === ",") && input.value !== '') {
-                e.preventDefault();
-                GPTResearcher.addTag(input.value);
-                input.value = '';
-            }
+        // Update the budget value display as the slider is dragged
+        budgetSlider.addEventListener('input', function() {
+            budgetValue.textContent = budgetSlider.value;
         });
     </script>
+
+    <script>
+        // Function to update the budget value and currency symbol together
+        function updateBudgetDisplay(value) {
+            const currencySymbol = document.getElementById("currency_symbol");
+            const budgetDisplay = document.getElementById("budget_display");
+            const currentCountry = document.getElementById("country").value;
+
+            // Set the correct currency symbol based on the country
+            let symbol = "£"; // Default to GBP
+            if (currentCountry.toUpperCase() === "UK") {
+                symbol = "£";
+            } else if (currentCountry.toUpperCase() === "USA" || currentCountry.toUpperCase() === "US") {
+                symbol = "$";
+            } else if (currentCountry.toUpperCase() === "EUROPE") {
+                symbol = "€";
+            } else {
+                symbol = "$"; // Default to USD for unrecognized countries
+            }
+
+            // Update the display with the value and the correct symbol
+            budgetDisplay.innerText = `${symbol}${value}`;
+        }
+
+        // Event listener to update budget value display as the slider moves
+        document.getElementById("budget").addEventListener("input", function() {
+            updateBudgetDisplay(this.value);
+        });
+
+        // Event listener to update the currency symbol when the country input changes
+        document.getElementById("country").addEventListener("input", function() {
+            updateBudgetDisplay(document.getElementById("budget").value); // Recalculate with new country
+        });
+
+        // Initialize the budget display on page load
+        document.addEventListener("DOMContentLoaded", function() {
+            updateBudgetDisplay(document.getElementById("budget").value);
+        });
+    </script>
+
 </body>
 
 </html>
