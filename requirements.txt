@@ -27,7 +27,7 @@ langchain_google_vertexai
 langchain_fireworks
 langchain_aws
 tiktoken
-tavily-python==0.3.6
+tavily-python==0.5.0
 gpt-researcher
 arxiv
 PyMuPDF
